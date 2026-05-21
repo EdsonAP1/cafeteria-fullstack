@@ -12,7 +12,7 @@ function App() {
 
   // Función para traer los productos del backend (la envolvemos para poder reutilizarla)
   function cargarProductos() {
-    fetch('http://localhost:3000/api/productos')
+    fetch('https://cafeteria-fullstack.onrender.com/api/productos')
       .then((res) => res.json())
       .then((datos) => setMenuProductos(datos));
   }
@@ -39,7 +39,7 @@ function App() {
     };
 
     // Hacemos el fetch configurado en modo POST
-    fetch('http://localhost:3000/api/productos', {
+    fetch('https://cafeteria-fullstack.onrender.com/api/productos', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json' // Le avisamos al backend que le va un JSON
