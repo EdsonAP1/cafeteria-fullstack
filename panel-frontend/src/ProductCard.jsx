@@ -1,34 +1,61 @@
-// src/ProductCard.jsx
-import { useState } from 'react';
-
-// Agregamos la palabra "export" al inicio de la función para que otros archivos puedan usarla
-export function ProductCard(props) {
-  const [cantidad, setCantidad] = useState(0);
-
-  function incrementar() {
-    setCantidad(cantidad + 1);
-  }
-
-  function decremento() {
-    if (cantidad > 0) {
-      setCantidad(cantidad - 1);
-    }
-  }
-
+export function ProductCard({ id, nombre, descripcion, precio, alEliminar, alEditar }) {
   return (
-    <div style={{ border: '1px solid #444', padding: '1rem', margin: '1rem', borderRadius: '8px', maxWidth: '300px' }}>
-      <h2>{props.nombre}</h2>
-      <p>{props.descripcion}</p>
-      <strong>Bs. {props.precio}</strong>
+    <div style={{
+      backgroundColor: '#2d2d2d',
+      border: '1px solid #444',
+      borderRadius: '8px',
+      padding: '1rem',
+      margin: '0.5rem',
+      width: '200px',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between'
+    }}>
+      <div>
+        <h3 style={{ margin: '0 0 0.5rem 0', color: '#fff' }}>{nombre}</h3>
+        <p style={{ fontSize: '0.9rem', color: '#aaa', minHeight: '40px', margin: '0 0 1rem 0' }}>{descripcion}</p>
+      </div>
       
-      <div style={{ marginTop: '1rem' }}>
-        <p>Cantidad seleccionada: <strong>{cantidad}</strong></p>
+      <div>
+        <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#4caf50', margin: '0 0 1rem 0' }}>
+          {precio} Bs.
+        </p>
+        
+        {/* FILA DE BOTONES DE ACCIÓN */}
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button onClick={incrementar} style={{ padding: '0.5rem 1rem', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-            Agregar +1
+          {/* BOTÓN AZUL DE EDICIÓN */}
+          <button 
+            onClick={() => alEditar({ id, nombre, descripcion, precio })} 
+            style={{
+              backgroundColor: '#3182ce',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '0.5rem',
+              flex: 1,
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            Editar✏️
           </button>
-          <button onClick={decremento} style={{ padding: '0.5rem 1rem', backgroundColor: '#333', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-            Quitar -1
+
+          {/* BOTÓN ROJO DE ELIMINAR */}
+          <button 
+            onClick={() => alEliminar(id)} 
+            style={{
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '0.5rem',
+              flex: 1,
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            Borrar🗑️
           </button>
         </div>
       </div>

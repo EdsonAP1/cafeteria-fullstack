@@ -17,9 +17,27 @@ const ProductoModel = {
       [nombre, descripcion, precio]
     );
     return resultado.rows[0]; // Devuelve el objeto que se acaba de guardar
-  }
+  },
 
+
+ /// 3. Actualizar un producto existente (¡Agregado aquí adentro!)
+  actualizar: async (id, nombre, descripcion, precio) => {
+    const resultado = await pool.query(
+      'UPDATE productos SET nombre = $1, descripcion = $2, precio = $3 WHERE id = $4 RETURNING *;',
+      [nombre, descripcion, precio, id]
+    );
+    return resultado.rows[0];
+  },
+
+  // 4. Eliminar un producto (¡Agregado aquí adentro!)
+  eliminar: async (id) => {
+    await pool.query('DELETE FROM productos WHERE id = $1;', [id]);
+    return { mensaje: "Producto eliminado correctamente" };
+  }
 };
+
+
+
 
 // Exportamos el modelo para que el controlador lo pueda usar
 module.exports = ProductoModel;
