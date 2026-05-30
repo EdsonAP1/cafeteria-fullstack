@@ -16,6 +16,9 @@ function App() {
   // Estado para saber qué producto estamos editando. Si está vacío (null), estamos creando.
   const [idProductoEditando, setIdProductoEditando] = useState(null);
 
+  // ¡NUEVO! Estado para capturar el archivo físico de la imagen seleccionada
+  const [imagenArchivo, setImagenArchivo] = useState(null);
+
   function cargarProductos() {
     fetch('http://localhost:3000/api/productos')
       .then((res) => res.json())
@@ -34,7 +37,7 @@ function App() {
     cargarCategorias(); 
   }, []);
 
-  // 1. FUNCIÓN DE ENVÍO POST (CREAR) O PUT (EDITAR)
+  // 1. FUNCIÓN DE ENVÍO OPTIMIZADA PARA MULTIPART/FORM-DATA (IMÁGENES BINARIAS)
   function manejarEnvio(e) {
     e.preventDefault();
 
@@ -43,12 +46,19 @@ function App() {
       return;
     }
 
-    const datosItem = {
-      nombre: nombre,
-      descripcion: descripcion,
-      precio: Number(precio),
-      categoria_id: categoriaSeleccionada ? Number(categoriaSeleccionada) : null 
-    };
+    // ¡CAMBIO CLAVE! Dejamos JSON y empaquetamos todo en FormData nativo
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('descripcion', descripcion);
+    formData.append('precio', Number(precio));
+    
+    if (categoriaSeleccionada) {
+      formData.append('categoria_id', Number(categoriaSeleccionada));
+    }
+    
+    if (imagenArchivo) {
+      formData.append('imagen', imagenArchivo); // El nombre "imagen" lo espera Multer en el backend
+    }
 
     const esEdicion = idProductoEditando !== null;
     const url = esEdicion 
@@ -59,10 +69,11 @@ function App() {
     fetch(url, {
       method: metodoHttp,
       headers: {
-        'Content-Type': 'application/json',
+        // NOTA IMPORTANTE: Con FormData NO debes poner 'Content-Type': 'application/json'. 
+        // El navegador configurará los límites binarios automáticamente.
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(datosItem)
+      body: formData // Enviamos el paquete físico
     })
     .then((res) => {
       if (!res.ok) throw new Error("Error al procesar la solicitud en el servidor.");
@@ -71,12 +82,13 @@ function App() {
     .then(() => {
       cargarProductos(); 
       
-      // Limpiamos los campos y salmos del modo edición
+      // Limpiamos los campos y salimos del modo edición
       setIdProductoEditando(null);
       setNombre('');
       setDescripcion('');
       setPrecio('');
-      setCategoriaSeleccionada(''); // Limpia la categoría elegida
+      setCategoriaSeleccionada(''); 
+      setImagenArchivo(null); // <-- ¡NUEVO! Limpiamos el selector de archivos
     })
     .catch((err) => alert(err.message));
   }
@@ -107,7 +119,6 @@ function App() {
     setNombre(producto.nombre);         
     setDescripcion(producto.descripcion); 
     setPrecio(producto.precio);         
-    // Hace que el menú desplegable recuerde la categoría actual o se ponga en vacío si no tiene
     setCategoriaSeleccionada(producto.categoria_id || ''); 
   }
 
@@ -151,8 +162,7 @@ function App() {
           <input type="number" value={precio} onChange={(e) => setPrecio(e.target.value)} style={{ width: '100%', padding: '0.5rem', marginTop: '0.2rem' }} />
         </div>
 
-        {/* ¡AQUÍ ESTÁ EL MENÚ DESPLEGABLE QUE HACÍA FALTA PINTAR! */}
-        <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ marginBottom: '1rem' }}>
           <label style={{ display: 'block', marginBottom: '0.2rem' }}>Categoría Relacionada:</label>
           <select 
             value={categoriaSeleccionada} 
@@ -166,6 +176,17 @@ function App() {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* ¡NUEVO! CONTROL COMPONENTE COMPLETO DE IMAGEN */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.2rem' }}>Imagen del Producto:</label>
+          <input 
+            type="file" 
+            accept="image/*"
+            onChange={(e) => setImagenArchivo(e.target.files[0])} // Guarda el archivo seleccionado
+            style={{ width: '100%', color: '#fff' }} 
+          />
         </div>
 
         <button type="submit" style={{ backgroundColor: idProductoEditando ? '#eab308' : '#0070f3', color: 'white', padding: '0.7rem 1.5rem', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}>
@@ -184,7 +205,7 @@ function App() {
             nombre={producto.nombre} 
             descripcion={producto.descripcion} 
             precio={Number(producto.precio)}
-            categoria_id={producto.categoria_id} // <-- Pasamos el ID de la categoría para el tracking de edición
+            categoria_id={producto.categoria_id} 
             alEliminar={eliminarProducto} 
             alEditar={seleccionarProductoParaEditar}
           />

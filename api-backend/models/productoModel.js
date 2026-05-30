@@ -11,12 +11,13 @@ const ProductoModel = {
   },
 
   // Función para insertar un nuevo café en la tabla
-  crear: async (nombre, descripcion, precio) => {
+  // Actualizado para recibir la URL de la imagen
+  crear: async (nombre, descripcion, precio, categoria_id, imagen_url) => {
     const resultado = await pool.query(
-      'INSERT INTO productos (nombre, descripcion, precio) VALUES ($1, $2, $3) RETURNING *;',
-      [nombre, descripcion, precio]
+      'INSERT INTO productos (nombre, descripcion, precio, categoria_id, imagen_url) VALUES ($1, $2, $3, $4, $5) RETURNING *;',
+      [nombre, descripcion, precio, categoria_id, imagen_url]
     );
-    return resultado.rows[0]; // Devuelve el objeto que se acaba de guardar
+    return resultado.rows[0];
   },
 
 
